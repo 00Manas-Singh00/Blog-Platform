@@ -2,15 +2,62 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
+  /* Light theme (default) - refined colors */
+  --bg-primary: #ffffff;
+  --bg-primary-rgb: 255, 255, 255;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #eef2f7;
+  --text-primary: #1e293b;
+  --text-primary-rgb: 30, 41, 59;
+  --text-secondary: #475569;
+  --text-secondary-rgb: 71, 85, 105;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+  --error-color: #ef4444;
+  --error-color-rgb: 239, 68, 68;
+  --success-color: #10b981;
+  --success-color-rgb: 16, 185, 129;
+  --warning-color: #f59e0b;
+  --warning-color-rgb: 245, 158, 11;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  --input-text-color: #000000;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #222;
-  background-color: #f5f7fa;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dark theme - refined colors with better contrast */
+.dark-theme {
+  --bg-primary: #0f172a;
+  --bg-primary-rgb: 15, 23, 42;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-primary-rgb: 241, 245, 249;
+  --text-secondary: #cbd5e1;
+  --text-secondary-rgb: 203, 213, 225;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --accent-color: #3b82f6;
+  --accent-hover: #60a5fa;
+  --error-color: #f87171;
+  --error-color-rgb: 248, 113, 113;
+  --success-color: #34d399;
+  --success-color-rgb: 52, 211, 153;
+  --warning-color: #fbbf24;
+  --warning-color-rgb: 251, 191, 36;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  --hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.25), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+  --input-text-color: #000000;
 }
 
 body {
@@ -18,6 +65,9 @@ body {
   padding: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 ul {
@@ -29,6 +79,34 @@ ul {
 h1 {
   font-size: 2rem;
   margin: 1rem 0 2rem;
-  color: #333;
+  color: var(--text-primary);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Global styles */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Basic transitions for theme switching */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 

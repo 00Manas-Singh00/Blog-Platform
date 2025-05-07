@@ -12,12 +12,20 @@ putenv("DB_PASS=");
 // Clerk Authentication
 putenv("CLERK_API_KEY=test_clerk_api_key");
 putenv("CLERK_JWT_KEY=test_clerk_jwt_key");
+putenv("CLERK_FRONTEND_API=clerk.your-site.com");
 
 // API Configuration
 putenv("API_URL=http://localhost:8000/api");
 
 // Environment (development, production)
 putenv("ENVIRONMENT=development");
+
+// CORS Configuration
+putenv("CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173");
+
+// Auth configuration - for development only!
+// DO NOT SET TO TRUE IN PRODUCTION
+putenv("BYPASS_AUTH=false");
 
 /**
  * Simple .env file loader for PHP

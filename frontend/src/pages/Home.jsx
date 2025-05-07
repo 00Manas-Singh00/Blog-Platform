@@ -1,25 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { FiCalendar, FiArrowRight, FiBookOpen, FiGrid, FiFilter } from 'react-icons/fi';
 import api from '../services/api';
 import Spinner from '../components/Spinner';
 import './Home.css';
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [filteredPosts, setFilteredPosts] = useState([]);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await api.getPosts();
-        setPosts(response.data || []);
+        
+        // Fetch posts
+        const postsResponse = await api.getPosts();
+        setPosts(postsResponse.data || []);
+        setFilteredPosts(postsResponse.data || []);
+        
+        // Fetch categories
+        const categoriesResponse = await api.getCategories();
+        setCategories(categoriesResponse.data || []);
       } catch (err) {
-        console.error('Error fetching posts:', err);
-        setError(err.message || 'Failed to load posts');
+        console.error('Error fetching data:', err);
+        setError(err.message || 'Failed to load content');
       } finally {
         setLoading(false);
       }
@@ -27,11 +38,28 @@ const Home = () => {
 
     fetchPosts();
   }, []);
+  
+  // Filter posts by category
+  useEffect(() => {
+    if (activeCategory === 'all') {
+      setFilteredPosts(posts);
+    } else {
+      setFilteredPosts(posts.filter(post => 
+        post.category?.toLowerCase() === activeCategory.toLowerCase()
+      ));
+    }
+  }, [activeCategory, posts]);
+
+  // Handle category selection
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category);
+  };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Spinner size="large" />
+      <div className="loading-container">
+        <Spinner size="large" className="loading-spinner" />
+        <p>Loading amazing content...</p>
       </div>
     );
   }
@@ -53,73 +81,171 @@ const Home = () => {
 
   if (posts.length === 0) {
     return (
-      <div className="text-center py-10">
-        <h2 className="text-2xl mb-4">No Posts Found</h2>
-        <p className="mb-4">There are currently no blog posts available.</p>
+      <div className="no-posts-message">
+        <h2>No Posts Found</h2>
+        <p>There are currently no blog posts available. Check back later for new content!</p>
       </div>
     );
   }
+  
+  // Get featured posts (first 3 posts)
+  const featuredPosts = posts.slice(0, 3);
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="container mx-auto px-4 py-8"
+      className="home-container"
     >
-      <h1 className="text-3xl font-bold mb-8 text-center">Latest Blog Posts</h1>
+      <div className="home-header">
+        <h1>Discover Inspiring Stories</h1>
+        <p>Explore our collection of thoughtful articles, tutorials, and insights across various topics.</p>
+        <div className="header-decoration"></div>
+      </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {posts.map((post) => (
-          <motion.div
-            key={post.id}
-            whileHover={{ y: -5, transition: { duration: 0.2 } }}
-            className="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col"
+      {/* Category filters */}
+      <div className="categories-list">
+        <div 
+          className={`category-chip ${activeCategory === 'all' ? 'active' : ''}`}
+          onClick={() => handleCategoryChange('all')}
+        >
+          All Posts
+        </div>
+        
+        {categories.map(category => (
+          <div 
+            key={category.id} 
+            className={`category-chip ${activeCategory === category.name ? 'active' : ''}`}
+            onClick={() => handleCategoryChange(category.name)}
           >
-            {post.image_url && (
-              <div className="h-48 overflow-hidden">
-                <img
-                  src={post.image_url}
-                  alt={post.title}
-                  className="w-full h-full object-cover transition-transform duration-300 transform hover:scale-105"
-                  onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/400x250?text=No+Image';
-                  }}
-                />
-              </div>
-            )}
-            
-            <div className="p-5 flex-grow flex flex-col">
-              <div className="flex items-center mb-2">
-                <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-                  {post.category || 'Uncategorized'}
-                </span>
-                <span className="text-gray-500 text-sm ml-auto">
-                  {new Date(post.created_at).toLocaleDateString()}
-                </span>
-              </div>
-              
-              <h2 className="text-xl font-bold mb-2 hover:text-blue-600">
-                <Link to={`/post/${post.id}`}>{post.title}</Link>
-              </h2>
-              
-              <p className="text-gray-700 mb-4 flex-grow line-clamp-3">
-                {post.content?.substring(0, 150)}
-                {post.content?.length > 150 ? '...' : ''}
-              </p>
-              
-              <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-100">
-                <span className="text-sm text-gray-600">By {post.author || 'Unknown'}</span>
-                <Link 
-                  to={`/post/${post.id}`} 
-                  className="text-blue-500 hover:underline text-sm font-medium"
-                >
-                  Read More
-                </Link>
-              </div>
-            </div>
-          </motion.div>
+            {category.name}
+          </div>
         ))}
+      </div>
+      
+      {/* Featured posts section */}
+      {activeCategory === 'all' && (
+        <div className="featured-posts">
+          <h2 className="section-title">
+            <FiBookOpen className="icon" />
+            Featured Articles
+          </h2>
+          
+          <div className="post-grid">
+            {featuredPosts.map((post) => (
+              <motion.div
+                key={post.id}
+                whileHover={{ y: -5 }}
+                className="post-card"
+              >
+                {post.image_url && (
+                  <div className="post-image">
+                    <img
+                      src={post.image_url}
+                      alt={post.title}
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/400x250?text=No+Image';
+                      }}
+                    />
+                    <div className="post-category">{post.category || 'Uncategorized'}</div>
+                  </div>
+                )}
+                
+                <div className="post-content">
+                  <div className="post-date">
+                    <FiCalendar className="icon" />
+                    {new Date(post.created_at).toLocaleDateString()}
+                  </div>
+                  
+                  <h3 className="post-title">
+                    <Link to={`/posts/${post.id}`} className="text-gray-800">{post.title}</Link>
+                  </h3>
+                  
+                  <p className="post-excerpt">
+                    {post.content?.substring(0, 120)}
+                    {post.content?.length > 120 ? '...' : ''}
+                  </p>
+                  
+                  <div className="post-footer">
+                    <div className="post-author">
+                      <span>By {post.author || 'Unknown'}</span>
+                    </div>
+                    
+                    <Link to={`/posts/${post.id}`} className="read-more">
+                      Read More
+                      <FiArrowRight className="icon" />
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* All posts or filtered posts */}
+      <div className="all-posts">
+        <h2 className="section-title">
+          <FiGrid className="icon" />
+          {activeCategory === 'all' ? 'All Posts' : `${activeCategory} Posts`}
+        </h2>
+        
+        {filteredPosts.length === 0 ? (
+          <div className="no-posts-message">
+            <p>No posts found in the "{activeCategory}" category.</p>
+          </div>
+        ) : (
+          <div className="post-grid">
+            {filteredPosts.map((post) => (
+              <motion.div
+                key={post.id}
+                whileHover={{ y: -5 }}
+                className="post-card"
+              >
+                {post.image_url && (
+                  <div className="post-image">
+                    <img
+                      src={post.image_url}
+                      alt={post.title}
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/400x250?text=No+Image';
+                      }}
+                    />
+                    <div className="post-category">{post.category || 'Uncategorized'}</div>
+                  </div>
+                )}
+                
+                <div className="post-content">
+                  <div className="post-date">
+                    <FiCalendar className="icon" />
+                    {new Date(post.created_at).toLocaleDateString()}
+                  </div>
+                  
+                  <h3 className="post-title">
+                    <Link to={`/posts/${post.id}`}>{post.title}</Link>
+                  </h3>
+                  
+                  <p className="post-excerpt">
+                    {post.content?.substring(0, 120)}
+                    {post.content?.length > 120 ? '...' : ''}
+                  </p>
+                  
+                  <div className="post-footer">
+                    <div className="post-author">
+                      <span>By {post.author || 'Unknown'}</span>
+                    </div>
+                    
+                    <Link to={`/posts/${post.id}`} className="read-more">
+                      Read More
+                      <FiArrowRight className="icon" />
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </motion.div>
   );

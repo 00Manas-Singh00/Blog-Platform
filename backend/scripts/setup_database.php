@@ -64,6 +64,24 @@ try {
     $pdo->exec($userProfilesTable);
     echo "Table 'user_profiles' created or already exists.\n";
     
+    // Create user_preferences table
+    $userPreferencesTable = "
+    CREATE TABLE IF NOT EXISTS `user_preferences` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `clerk_id` varchar(255) NOT NULL,
+      `theme` varchar(50) DEFAULT 'system',
+      `language` varchar(10) DEFAULT 'en',
+      `auto_save` tinyint(1) DEFAULT 1,
+      `two_factor_enabled` tinyint(1) DEFAULT 0,
+      `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+      `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `clerk_id` (`clerk_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    ";
+    $pdo->exec($userPreferencesTable);
+    echo "Table 'user_preferences' created or already exists.\n";
+    
     // Create categories table
     $categoriesTable = "
     CREATE TABLE IF NOT EXISTS `categories` (

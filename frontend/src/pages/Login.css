@@ -2,20 +2,24 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 800px;
-  margin: 0 auto;
+  max-width: 480px;
+  margin: 2rem auto;
   padding: 2rem;
+  text-align: center;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
 }
 
 .login-container h1 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  color: #333;
+  color: var(--text-primary);
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .login-container p {
+  color: var(--text-secondary);
   margin-bottom: 2rem;
-  color: #666;
 }
 
 .clerk-auth-container {
@@ -28,6 +32,71 @@
 :root {
   --clerk-primary: #3490dc;
   --clerk-primary-hover: #2779bd;
+}
+
+/* Development mode styles */
+.dev-login-container {
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  border: 1px dashed var(--accent-color);
+}
+
+.dev-login-notice {
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  background-color: rgba(var(--warning-color-rgb), 0.1);
+  border-radius: 6px;
+  border-left: 3px solid var(--warning-color);
+}
+
+.dev-login-notice p {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.dev-login-notice p:last-child {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+.dev-login-button {
+  background-color: var(--accent-color);
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.dev-login-button:hover {
+  background-color: var(--accent-hover);
+}
+
+.dev-login-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.dev-login-links a {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.dev-login-links a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
 }
 
 @media (max-width: 768px) {
