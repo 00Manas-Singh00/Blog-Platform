@@ -1,0 +1,41 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.login-container h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.login-container p {
+  margin-bottom: 2rem;
+  color: #666;
+}
+
+.clerk-auth-container {
+  width: 100%;
+  max-width: 500px;
+  margin-top: 1rem;
+}
+
+/* Customizing Clerk UI */
+:root {
+  --clerk-primary: #3490dc;
+  --clerk-primary-hover: #2779bd;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    padding: 1rem;
+  }
+  
+  .login-container h1 {
+    font-size: 1.5rem;
+  }
+} 
