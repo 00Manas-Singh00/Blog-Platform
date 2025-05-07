@@ -1,9 +1,9 @@
 import React from 'react';
-import { SignIn } from '@clerk/clerk-react';
+import { SignUp } from '@clerk/clerk-react';
 import { motion } from 'framer-motion';
-import './Login.css';
+import './Login.css'; // Reusing the same CSS
 
-const Login = () => {
+const Register = () => {
   return (
     <motion.div 
       className="login-container"
@@ -11,13 +11,13 @@ const Login = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <h1>Log in to your account</h1>
-      <p>Sign in to create and manage your blog posts</p>
+      <h1>Create a new account</h1>
+      <p>Sign up to start creating your own blog posts</p>
       <div className="clerk-auth-container">
-        <SignIn 
+        <SignUp 
           routing="path" 
-          path="/login"
-          signUpUrl="/register"
+          path="/register"
+          signInUrl="/login"
           redirectUrl="/"
         />
       </div>
@@ -25,4 +25,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Register;

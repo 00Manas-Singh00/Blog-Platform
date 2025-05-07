@@ -6,13 +6,16 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  useLocation
+  useLocation,
+  Navigate
 } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { useUser, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import Home from './pages/Home';
 import PostDetail from './pages/PostDetail';
 import AdminPanel from './pages/AdminPanel';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import NotFound from './pages/NotFound';
 import Navbar from './components/Navbar';
 import Categories from './pages/Categories';
@@ -20,6 +23,7 @@ import Categories from './pages/Categories';
 // Layout component with animations
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const { isSignedIn } = useUser();
   
   return (
     <AnimatePresence mode="wait">
@@ -27,8 +31,24 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<Home />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/post/:id" element={<PostDetail />} />
-        <Route path="/admin" element={<AdminPanel />} />
+        
+        {/* Protected Admin Route */}
+        <Route
+          path="/admin"
+          element={
+            <>
+              <SignedIn>
+                <AdminPanel />
+              </SignedIn>
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+            </>
+          }
+        />
+        
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
