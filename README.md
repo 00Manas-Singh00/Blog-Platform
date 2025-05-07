@@ -1,64 +1,103 @@
 # Blog Platform
 
-A full-stack blog platform with React frontend and PHP backend, integrated with Clerk for authentication.
+A modern blog platform built with PHP backend and React frontend, featuring Clerk authentication.
 
 ## Project Structure
 
-- **frontend**: React-based frontend with responsive UI
-- **backend**: PHP RESTful API for data management
+- `backend/`: PHP backend with REST API endpoints
+- `frontend/`: React frontend application
 
-## Features
-
-- User authentication via Clerk
-- Create, read, update, and delete blog posts
-- Category management
-- Responsive UI with smooth animations
-- Protected admin routes
-
-## Getting Started
+## Setup Instructions
 
 ### Prerequisites
 
-- Node.js (v14+)
-- PHP (v7.4+)
-- MySQL (v5.7+)
-- Web server (Apache/Nginx)
+- PHP 7.4+ with PDO extension
+- MySQL or MariaDB
+- Node.js 14+ and npm
 
-### Setting up the Frontend
+### Backend Setup
 
-1. Navigate to the frontend directory:
-   ```
-   cd frontend
-   ```
+1. Configure environment variables:
 
-2. Install dependencies:
-   ```
-   npm install
-   ```
+```bash
+cd backend
+cp config/env.example.php config/env.php
+```
 
-3. Set up Clerk authentication (see [CLERK_SETUP.md](CLERK_SETUP.md))
+Edit `env.php` with your database credentials and Clerk API keys.
 
-4. Start the development server:
-   ```
-   npm run dev
-   ```
+2. Set up the database:
 
-### Setting up the Backend
+```bash
+php scripts/setup_database.php
+```
 
-1. Set up a virtual host pointing to the `backend` directory
+3. Start the development server:
 
-2. Import the database schema:
-   ```
-   mysql -u username -p < backend/blog_platform.sql
-   ```
+```bash
+php scripts/start_server.php
+```
 
-3. Update database credentials in `backend/config/Database.php`
+The backend server will run at http://localhost:8000
 
-4. Set up Clerk authentication keys (see [CLERK_SETUP.md](CLERK_SETUP.md))
+### Frontend Setup
+
+1. Install dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+2. Configure environment variables:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` with your Clerk publishable key and API URL.
+
+3. Start the development server:
+
+```bash
+npm run dev
+```
+
+The frontend will run at http://localhost:5173 (or another port if 5173 is in use)
+
+## Features
+
+- User authentication with Clerk
+- User profile management
+- Blog post creation, editing, and deletion
+- Categories and tagging system
+- Responsive design
+- Error handling and loading states
+- Development mode with mock data
+
+## Development
+
+### Frontend Development with Mock Data
+
+The frontend is configured to work with mock data when the backend is not available or during development:
+
+1. Mock data is enabled by default in `frontend/src/services/api.js`
+2. The system includes sample posts, categories, and users
+3. All API operations (GET, POST, PUT, DELETE) are simulated
+4. To use real backend data, set `USE_MOCK_DATA = false` in the API service
+
+### Error Handling
+
+The application implements proper error handling:
+
+1. API errors are caught and displayed to users
+2. Loading states are shown during data fetching
+3. Authentication errors are handled gracefully
+4. Form validation errors are displayed to users
 
 ## Authentication
 
-This project uses [Clerk](https://clerk.com/) for authentication. See [CLERK_SETUP.md](CLERK_SETUP.md) for setup instructions.
+This project uses Clerk for authentication. Refer to [CLERK_SETUP.md](CLERK_SETUP.md) for detailed setup instructions.
 
 ## API Documentation
 

@@ -10,10 +10,11 @@ import {
   Navigate
 } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { useUser, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
+import { useUser, SignedIn, SignedOut, RedirectToSignIn, ClerkLoaded, ClerkLoading } from '@clerk/clerk-react';
 import Home from './pages/Home';
 import PostDetail from './pages/PostDetail';
 import AdminPanel from './pages/AdminPanel';
+import UserProfile from './pages/UserProfile';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NotFound from './pages/NotFound';
@@ -47,6 +48,21 @@ const AnimatedRoutes = () => {
           }
         />
         
+        {/* Protected User Profile Route */}
+        <Route
+          path="/profile"
+          element={
+            <>
+              <SignedIn>
+                <UserProfile />
+              </SignedIn>
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+            </>
+          }
+        />
+        
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="*" element={<NotFound />} />
@@ -58,10 +74,19 @@ const AnimatedRoutes = () => {
 function App() {
   return (
     <Router>
-      <Navbar />
-      <main className="main-container">
-        <AnimatedRoutes />
-      </main>
+      <ClerkLoading>
+        <div className="loading-screen">
+          <div className="spinner"></div>
+          <p>Loading authentication...</p>
+        </div>
+      </ClerkLoading>
+      
+      <ClerkLoaded>
+        <Navbar />
+        <main className="main-container">
+          <AnimatedRoutes />
+        </main>
+      </ClerkLoaded>
     </Router>
   )
 }

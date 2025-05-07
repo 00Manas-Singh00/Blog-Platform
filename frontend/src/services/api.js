@@ -1,169 +1,201 @@
 import axios from 'axios';
 
-// Mock data for development
-const MOCK_POSTS = [
-  {
-    id: 1,
-    title: "Getting Started with React",
-    content: "React is a JavaScript library for building user interfaces. It lets you compose complex UIs from small and isolated pieces of code called \"components\". React has a few different kinds of components, but we'll start with React.Component subclasses.",
-    excerpt: "Learn the basics of React and how to create your first component.",
-    author: "Jane Doe",
-    created_at: "2024-06-01T10:30:00Z",
-    category: "Frontend",
-    tags: ["React", "JavaScript", "Web Development"]
-  },
-  {
-    id: 2,
-    title: "PHP REST API Best Practices",
-    content: "Building a REST API with PHP requires attention to several details. This post covers authentication, routing, response formatting, error handling, and more to help you build robust and secure APIs.",
-    excerpt: "Learn how to build secure and scalable REST APIs with PHP.",
-    author: "John Smith",
-    created_at: "2024-05-25T14:15:00Z",
-    category: "Backend",
-    tags: ["PHP", "API", "REST"]
-  },
-  {
-    id: 3,
-    title: "Styling with CSS-in-JS",
-    content: "CSS-in-JS libraries allow you to write CSS directly in your JavaScript code. This approach offers several benefits like scoped styling, dynamic styling based on props, and more. This post explores the popular libraries and how to use them effectively.",
-    excerpt: "Modern approaches to styling your React applications.",
-    author: "Alex Johnson",
-    created_at: "2024-05-20T09:45:00Z",
-    category: "Design",
-    tags: ["CSS", "React", "Styling"]
-  }
-];
-
-// API Base URL from environment variables
+// API Base URL - Use environment variable or fallback to localhost
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-// Use this flag to toggle between mock data and real API
-// Set to false to use the real API with your backend
+// Flag to toggle between mock data and real API
 const USE_MOCK_DATA = true;
 
-// Helper to get auth headers if user is logged in
-const getAuthHeaders = async () => {
-  if (window.Clerk && window.Clerk.session) {
-    try {
-      const token = await window.Clerk.session.getToken();
-      return {
-        'Authorization': `Bearer ${token}`
+// Mock data for development
+const MOCK_DATA = {
+  posts: [
+    {
+      id: 1,
+      title: 'Getting Started with React',
+      content: 'React is a popular JavaScript library for building user interfaces. It was developed by Facebook and has gained wide adoption in the web development community. React allows developers to create reusable UI components that can update efficiently when data changes.',
+      image_url: 'https://images.unsplash.com/photo-1633356122102-3fe601e05bd2',
+      category: 'Technology',
+      author: 'John Doe',
+      created_at: '2023-05-15',
+      updated_at: '2023-05-16'
+    },
+    {
+      id: 2,
+      title: 'The Art of Photography',
+      content: 'Photography is the art, application, and practice of creating images by recording light, either electronically by means of an image sensor, or chemically by means of a light-sensitive material such as photographic film.',
+      image_url: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32',
+      category: 'Arts',
+      author: 'Jane Smith',
+      created_at: '2023-05-10',
+      updated_at: '2023-05-11'
+    },
+    {
+      id: 3,
+      title: 'Healthy Eating Habits',
+      content: 'A healthy diet is essential for good health and nutrition. It protects you against many chronic noncommunicable diseases, such as heart disease, diabetes and cancer. Eating a variety of foods and consuming less salt, sugars and saturated and industrially-produced trans-fats, are essential for healthy diet.',
+      image_url: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352',
+      category: 'Health',
+      author: 'Mike Johnson',
+      created_at: '2023-05-05',
+      updated_at: '2023-05-07'
+    }
+  ],
+  categories: [
+    { id: 1, name: 'Technology', slug: 'technology' },
+    { id: 2, name: 'Arts', slug: 'arts' },
+    { id: 3, name: 'Health', slug: 'health' },
+    { id: 4, name: 'Science', slug: 'science' },
+    { id: 5, name: 'Travel', slug: 'travel' }
+  ],
+  users: [
+    {
+      id: 1,
+      username: 'johndoe',
+      email: 'john@example.com',
+      full_name: 'John Doe',
+      bio: 'Technology enthusiast and blogger',
+      avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+      role: 'admin'
+    },
+    {
+      id: 2,
+      username: 'janesmith',
+      email: 'jane@example.com',
+      full_name: 'Jane Smith',
+      bio: 'Professional photographer and writer',
+      avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
+      role: 'author'
+    }
+  ]
+};
+
+// API instance
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
+
+// Add response interceptor for handling error messages
+api.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('API Error:', error.response?.data?.message || error.message);
+    return Promise.reject(error);
+  }
+);
+
+// Mock API functions
+const mockAPI = {
+  async get(endpoint) {
+    console.log(`MOCK API GET: ${endpoint}`);
+    const parts = endpoint.split('/').filter(Boolean);
+    
+    if (parts[0] === 'posts') {
+      if (parts.length === 1) {
+        return { data: MOCK_DATA.posts };
+      } else if (parts.length === 2) {
+        const postId = parseInt(parts[1]);
+        const post = MOCK_DATA.posts.find(p => p.id === postId);
+        return { data: post || null };
+      }
+    }
+    
+    if (parts[0] === 'categories') {
+      return { data: MOCK_DATA.categories };
+    }
+    
+    if (parts[0] === 'users') {
+      if (parts.length === 1) {
+        return { data: MOCK_DATA.users };
+      } else if (parts.length === 2) {
+        const userId = parseInt(parts[1]);
+        const user = MOCK_DATA.users.find(u => u.id === userId);
+        return { data: user || null };
+      }
+    }
+    
+    return { data: null };
+  },
+
+  async post(endpoint, data) {
+    console.log(`MOCK API POST: ${endpoint}`, data);
+    if (endpoint === 'posts') {
+      const newPost = {
+        id: MOCK_DATA.posts.length + 1,
+        ...data,
+        created_at: new Date().toISOString().split('T')[0],
+        updated_at: new Date().toISOString().split('T')[0]
       };
-    } catch (err) {
-      console.error('Error getting auth token:', err);
+      MOCK_DATA.posts.push(newPost);
+      return { data: newPost };
     }
-  } else if (window.Clerk) {
-    try {
-      // Try to get active session
-      const session = await window.Clerk.getSession();
-      if (session) {
-        const token = await session.getToken();
-        return {
-          'Authorization': `Bearer ${token}`
+    return { data: { success: true } };
+  },
+
+  async put(endpoint, data) {
+    console.log(`MOCK API PUT: ${endpoint}`, data);
+    const parts = endpoint.split('/').filter(Boolean);
+    
+    if (parts[0] === 'posts' && parts.length === 2) {
+      const postId = parseInt(parts[1]);
+      const postIndex = MOCK_DATA.posts.findIndex(p => p.id === postId);
+      
+      if (postIndex !== -1) {
+        MOCK_DATA.posts[postIndex] = {
+          ...MOCK_DATA.posts[postIndex],
+          ...data,
+          updated_at: new Date().toISOString().split('T')[0]
         };
+        return { data: MOCK_DATA.posts[postIndex] };
       }
-    } catch (err) {
-      console.error('Error getting session:', err);
     }
-  }
-  return {};
-};
+    
+    return { data: { success: true } };
+  },
 
-export const getPosts = async () => {
-  if (USE_MOCK_DATA) {
-    // Return mock data
-    return new Promise(resolve => {
-      setTimeout(() => resolve({ records: MOCK_POSTS }), 500); // Simulate network delay
-    });
-  } else {
-    // Use real API with auth if available
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/posts/read.php`, { headers });
-    return response.data;
-  }
-};
-
-export const getPostById = async (id) => {
-  if (USE_MOCK_DATA) {
-    // Return mock data for the specific ID
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const post = MOCK_POSTS.find(p => p.id === parseInt(id));
-        if (post) {
-          resolve(post);
-        } else {
-          reject(new Error("Post not found"));
-        }
-      }, 500); // Simulate network delay
-    });
-  } else {
-    // Use real API
-    const headers = await getAuthHeaders();
-    const response = await axios.get(`${API_BASE_URL}/posts/read_one.php?id=${id}`, { headers });
-    return response.data;
-  }
-};
-
-export const createPost = async (postData) => {
-  if (USE_MOCK_DATA) {
-    // Simulate creating a post
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ message: "Post was created." });
-      }, 500);
-    });
-  } else {
-    // Use real API with auth
-    const headers = await getAuthHeaders();
-    const response = await axios.post(`${API_BASE_URL}/posts/create.php`, postData, { 
-      headers: {
-        ...headers,
-        'Content-Type': 'application/json'
+  async delete(endpoint) {
+    console.log(`MOCK API DELETE: ${endpoint}`);
+    const parts = endpoint.split('/').filter(Boolean);
+    
+    if (parts[0] === 'posts' && parts.length === 2) {
+      const postId = parseInt(parts[1]);
+      const postIndex = MOCK_DATA.posts.findIndex(p => p.id === postId);
+      
+      if (postIndex !== -1) {
+        MOCK_DATA.posts.splice(postIndex, 1);
+        return { data: { success: true } };
       }
-    });
-    return response.data;
+    }
+    
+    return { data: { success: true } };
   }
 };
 
-export const updatePost = async (postData) => {
-  if (USE_MOCK_DATA) {
-    // Simulate updating a post
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ message: "Post was updated." });
-      }, 500);
-    });
-  } else {
-    // Use real API with auth
-    const headers = await getAuthHeaders();
-    const response = await axios.put(`${API_BASE_URL}/posts/update.php`, postData, { 
-      headers: {
-        ...headers,
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.data;
-  }
-};
-
-export const deletePost = async (postId) => {
-  if (USE_MOCK_DATA) {
-    // Simulate deleting a post
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ message: "Post was deleted." });
-      }, 500);
-    });
-  } else {
-    // Use real API with auth
-    const headers = await getAuthHeaders();
-    const response = await axios.delete(`${API_BASE_URL}/posts/delete.php`, { 
-      headers: {
-        ...headers,
-        'Content-Type': 'application/json'
-      },
-      data: { id: postId }
-    });
-    return response.data;
-  }
+// Export API methods with mock handling
+export default {
+  getPosts: () => 
+    USE_MOCK_DATA ? mockAPI.get('posts') : api.get('/posts'),
+  
+  getPost: (id) => 
+    USE_MOCK_DATA ? mockAPI.get(`posts/${id}`) : api.get(`/posts/${id}`),
+  
+  createPost: (postData) => 
+    USE_MOCK_DATA ? mockAPI.post('posts', postData) : api.post('/posts', postData),
+  
+  updatePost: (id, postData) => 
+    USE_MOCK_DATA ? mockAPI.put(`posts/${id}`, postData) : api.put(`/posts/${id}`, postData),
+  
+  deletePost: (id) => 
+    USE_MOCK_DATA ? mockAPI.delete(`posts/${id}`) : api.delete(`/posts/${id}`),
+  
+  getCategories: () => 
+    USE_MOCK_DATA ? mockAPI.get('categories') : api.get('/categories'),
+  
+  getUserProfile: (userId) => 
+    USE_MOCK_DATA ? mockAPI.get(`users/${userId}`) : api.get(`/users/${userId}`),
+  
+  updateUserProfile: (userId, profileData) => 
+    USE_MOCK_DATA ? mockAPI.put(`users/${userId}`, profileData) : api.put(`/users/${userId}`, profileData),
 }; 
