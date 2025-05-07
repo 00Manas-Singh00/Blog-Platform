@@ -14,7 +14,7 @@ const PostCard = ({ id, title, excerpt, author, date, category, tags }) => {
       }}
     >
       <h2 className="post-card-title">
-        <Link to={`/post/${id}`}>{title}</Link>
+        <Link to={`/posts/${id}`}>{title}</Link>
       </h2>
       <div className="post-card-meta">
         <span>
@@ -56,7 +56,7 @@ const PostCard = ({ id, title, excerpt, author, date, category, tags }) => {
         className="post-card-readmore"
         whileHover={{ x: 5 }}
       >
-        <Link to={`/post/${id}`}>Read more →</Link>
+        <Link to={`/posts/${id}`}>Read more →</Link>
       </motion.div>
     </motion.div>
   );

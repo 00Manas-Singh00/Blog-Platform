@@ -1,21 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useUser, useAuth } from '@clerk/clerk-react';
-import { FiEdit, FiSave, FiX, FiExternalLink, FiGithub, FiTwitter, FiLinkedin, FiFacebook, FiInstagram } from 'react-icons/fi';
-import { getUserProfile, updateUserProfile } from '../services/api';
+import { FiUser, FiBell, FiLock, FiSettings, FiEdit3, FiExternalLink, FiCheck } from 'react-icons/fi';
+import { useUser } from '@clerk/clerk-react';
+import { useUserSettings } from '../services/UserSettingsService';
+import AccountSettings from '../components/AccountSettings';
+import NotificationSettings from '../components/NotificationSettings';
+import PrivacySettings from '../components/PrivacySettings';
+import ProfileSkeleton from '../components/ProfileSkeleton';
 import './UserProfile.css';
 
+// Function to get proper icon for social platforms
+const getSocialIcon = (platform) => {
+  // Here we would use the appropriate icon for each platform
+  // For simplicity, we're using FiExternalLink for all
+  return <FiExternalLink />;
+};
+
 const UserProfile = () => {
-  const { user } = useUser();
-  const { getToken } = useAuth();
+  const { user, isLoaded, isSignedIn } = useUser();
+  const userSettings = useUserSettings();
   
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [saveLoading, setSaveLoading] = useState(false);
-  
-  // Form state
+  const [activeTab, setActiveTab] = useState('profile');
+  const [isEditing, setIsEditing] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
   const [formData, setFormData] = useState({
     display_name: '',
     bio: '',
@@ -23,43 +30,102 @@ const UserProfile = () => {
     social_links: []
   });
   
-  // Fetch user profile on component mount
+  const [notificationSettings, setNotificationSettings] = useState(null);
+  const [privacySettings, setPrivacySettings] = useState(null);
+  const [accountSettings, setAccountSettings] = useState(null);
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Fetch user profile and settings
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const data = await getUserProfile();
-        setProfile(data);
-        
-        // Initialize form data
-        setFormData({
-          display_name: data.display_name || '',
-          bio: data.bio || '',
-          website: data.website || '',
-          social_links: data.social_links || []
-        });
-      } catch (err) {
-        console.error('Error fetching profile:', err);
-        // Create fallback profile data if fetch fails
-        const fallbackProfile = {
-          display_name: user?.fullName || user?.username || '',
-          bio: '',
-          website: '',
-          social_links: [],
-          clerk_id: user?.id
-        };
-        setProfile(fallbackProfile);
-        setFormData(fallbackProfile);
-        setError('Failed to load profile from server. Using local data instead.');
-      } finally {
-        setLoading(false);
+    const fetchUserData = async () => {
+      if (isLoaded && isSignedIn) {
+        try {
+          setLoading(true);
+          
+          // For this demo, we're using mock data for the profile
+          // In a real app, this would come from your API
+          const profileData = {
+            display_name: user.fullName || user.username,
+            bio: "Frontend developer passionate about creating intuitive and beautiful user interfaces.",
+            website: "https://myportfolio.dev",
+            social_links: [
+              { platform: "GitHub", url: "https://github.com/username" },
+              { platform: "Twitter", url: "https://twitter.com/username" }
+            ]
+          };
+          
+          setUserProfile(profileData);
+          
+          // Try to load user preferences from backend
+          try {
+            const preferences = await userSettings.getPreferences();
+            
+            setAccountSettings({
+              language: preferences.language || 'en',
+              theme: preferences.theme || 'light',
+              auto_save: preferences.auto_save || false,
+              two_factor_auth: preferences.two_factor_enabled || false
+            });
+          } catch (preferencesError) {
+            console.error('Error loading preferences:', preferencesError);
+            // Use defaults if preferences can't be loaded
+            setAccountSettings({
+              language: 'en',
+              theme: 'light',
+              auto_save: true,
+              two_factor_auth: false
+            });
+          }
+          
+          // Sample notification settings (would come from API)
+          setNotificationSettings({
+            email_notifications: {
+              new_comments: true,
+              comment_replies: true,
+              post_likes: true,
+              newsletter: false
+            },
+            site_notifications: {
+              new_comments: true,
+              comment_replies: true,
+              post_likes: true,
+              system_announcements: true
+            }
+          });
+          
+          // Sample privacy settings (would come from API)
+          setPrivacySettings({
+            profile_visibility: 'public',
+            show_email: false,
+            show_social_links: true,
+            allow_comments: true,
+            comment_approval: false
+          });
+          
+        } catch (err) {
+          setError('Failed to load user profile');
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
       }
     };
     
-    if (user) {
-      fetchProfile();
+    fetchUserData();
+  }, [isLoaded, isSignedIn, user, userSettings]);
+  
+  useEffect(() => {
+    if (userProfile) {
+      setFormData({
+        display_name: userProfile.display_name || '',
+        bio: userProfile.bio || '',
+        website: userProfile.website || '',
+        social_links: userProfile.social_links || []
+      });
     }
-  }, [user]);
+  }, [userProfile]);
   
   // Handle input changes
   const handleInputChange = (e) => {
@@ -96,253 +162,386 @@ const UserProfile = () => {
   
   // Remove social link
   const removeSocialLink = (index) => {
-    const updatedLinks = formData.social_links.filter((_, i) => i !== index);
+    const updatedLinks = [...formData.social_links];
+    updatedLinks.splice(index, 1);
+    
     setFormData({
       ...formData,
       social_links: updatedLinks
     });
   };
   
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  // Save profile changes
+  const saveProfileChanges = async () => {
     try {
-      setSaveLoading(true);
+      setLoading(true);
+      setError(null);
       
-      // Clean social links (remove empty ones)
-      const cleanedLinks = formData.social_links.filter(
-        link => link.platform && link.url
-      );
+      // Update profile (in a real app, this would be an API call)
+      const updatedProfile = { ...userProfile, ...formData };
+      setUserProfile(updatedProfile);
+      setIsEditing(false);
       
-      const updatedProfile = {
-        ...formData,
-        social_links: cleanedLinks
-      };
-      
-      await updateUserProfile(updatedProfile);
-      
-      // Update the profile state
-      setProfile({
-        ...profile,
-        ...updatedProfile
-      });
-      
-      // Exit edit mode
-      setEditMode(false);
+      // Show success message or notification
     } catch (err) {
-      setError('Failed to update profile.');
+      setError('Failed to update profile');
       console.error(err);
     } finally {
-      setSaveLoading(false);
+      setLoading(false);
     }
   };
   
-  // Cancel edit mode
-  const handleCancel = () => {
-    // Reset form data to current profile
+  // Cancel profile editing
+  const cancelEditing = () => {
+    // Reset form data to original values
     setFormData({
-      display_name: profile.display_name || '',
-      bio: profile.bio || '',
-      website: profile.website || '',
-      social_links: profile.social_links || []
+      display_name: userProfile.display_name || '',
+      bio: userProfile.bio || '',
+      website: userProfile.website || '',
+      social_links: userProfile.social_links || []
     });
-    setEditMode(false);
+    
+    setIsEditing(false);
   };
   
-  // Get social media icon
-  const getSocialIcon = (platform) => {
-    switch (platform.toLowerCase()) {
-      case 'twitter': return <FiTwitter />;
-      case 'github': return <FiGithub />;
-      case 'linkedin': return <FiLinkedin />;
-      case 'facebook': return <FiFacebook />;
-      case 'instagram': return <FiInstagram />;
-      default: return <FiExternalLink />;
+  // Generic function to update profile data
+  const updateProfile = async (data) => {
+    // This would be an API call in a real app
+    console.log('Updating profile with:', data);
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true });
+      }, 500);
+    });
+  };
+  
+  // Mock function for account deletion
+  const deleteUserAccount = async () => {
+    console.log('Deleting account...');
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true });
+      }, 500);
+    });
+  };
+  
+  // Handle notification settings save
+  const handleNotificationSettingsSave = async (settings) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Update notification settings
+      setNotificationSettings(settings);
+      
+      // In a real app, you would save these immediately
+      // For this demo, we'll save them with the rest of the profile
+      await updateProfile({ notification_settings: settings });
+      
+      // Show success message or notification
+    } catch (err) {
+      setError('Failed to update notification settings: ' + (err.message || 'Unknown error'));
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
   
-  if (loading) {
+  // Handle privacy settings save
+  const handlePrivacySettingsSave = async (settings) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Update privacy settings
+      setPrivacySettings(settings);
+      
+      // In a real app, you would save these immediately
+      // For this demo, we'll save them with the rest of the profile
+      await updateProfile({ privacy_settings: settings });
+      
+      // Show success message or notification
+    } catch (err) {
+      setError('Failed to update privacy settings: ' + (err.message || 'Unknown error'));
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Handle account settings save
+  const handleAccountSettingsSave = async (settings) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Update account settings locally
+      setAccountSettings(settings);
+      
+      // Update preferences through the API
+      await userSettings.updatePreferences({
+        theme: settings.theme,
+        language: settings.language,
+        auto_save: settings.auto_save,
+        two_factor_enabled: settings.two_factor_auth
+      });
+      
+      // Show success message or notification
+    } catch (err) {
+      setError('Failed to update account settings: ' + (err.message || 'Unknown error'));
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Handle account deletion
+  const handleDeleteAccount = async (result) => {
+    try {
+      if (result && result.success) {
+        // Redirect to homepage or logout page
+        window.location.href = '/';
+      }
+    } catch (err) {
+      setError('Failed to delete account: ' + (err.message || 'Unknown error'));
+      console.error(err);
+    }
+  };
+  
+  if (!isLoaded) {
+    return <ProfileSkeleton />;
+  }
+  
+  if (!isSignedIn) {
     return (
-      <div className="profile-loading">
-        <div className="loader"></div>
-        <p>Loading profile...</p>
+      <div className="error-container">
+        <h2>Authentication Required</h2>
+        <p>Please sign in to view your profile.</p>
       </div>
     );
   }
   
-  if (error) {
-    return <div className="profile-error">{error}</div>;
-  }
-  
   return (
     <motion.div 
-      className="profile-container"
+      className="user-profile-container"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="profile-header">
-        <h1>My Profile</h1>
-        {!editMode ? (
-          <button className="edit-profile-btn" onClick={() => setEditMode(true)}>
-            <FiEdit /> Edit Profile
-          </button>
-        ) : (
-          <div className="edit-controls">
-            <button 
-              className="cancel-btn" 
-              onClick={handleCancel}
-              disabled={saveLoading}
-            >
-              <FiX /> Cancel
-            </button>
-            <button 
-              className="save-btn" 
-              onClick={handleSubmit}
-              disabled={saveLoading}
-            >
-              <FiSave /> {saveLoading ? 'Saving...' : 'Save'}
-            </button>
-          </div>
-        )}
+      <h1>My Profile</h1>
+      
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
+      
+      <div className="profile-tabs">
+        <button 
+          className={`profile-tab ${activeTab === 'profile' ? 'active' : ''}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          <FiUser /> Profile
+        </button>
+        <button 
+          className={`profile-tab ${activeTab === 'notifications' ? 'active' : ''}`}
+          onClick={() => setActiveTab('notifications')}
+        >
+          <FiBell /> Notifications
+        </button>
+        <button 
+          className={`profile-tab ${activeTab === 'privacy' ? 'active' : ''}`}
+          onClick={() => setActiveTab('privacy')}
+        >
+          <FiLock /> Privacy
+        </button>
+        <button 
+          className={`profile-tab ${activeTab === 'settings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('settings')}
+        >
+          <FiSettings /> Account Settings
+        </button>
       </div>
       
-      <div className="profile-content">
-        <div className="profile-avatar">
-          <img 
-            src={user?.imageUrl || 'https://i.pravatar.cc/150?img=68'} 
-            alt={user?.fullName || "User"} 
-          />
-        </div>
-        
-        {/* View Mode */}
-        {!editMode && (
-          <div className="profile-details">
-            <h2>{profile?.display_name || user?.fullName || user?.username}</h2>
-            <p className="profile-email">{user?.primaryEmailAddress?.emailAddress}</p>
-            
-            {profile?.bio && (
-              <div className="profile-bio">
-                <h3>About</h3>
-                <p>{profile.bio}</p>
-              </div>
-            )}
-            
-            {profile?.website && (
-              <div className="profile-website">
-                <h3>Website</h3>
-                <a href={profile.website} target="_blank" rel="noopener noreferrer">
-                  {profile.website} <FiExternalLink />
-                </a>
-              </div>
-            )}
-            
-            {profile?.social_links?.length > 0 && (
-              <div className="profile-social">
-                <h3>Connect</h3>
-                <div className="social-links">
-                  {profile.social_links.map((link, index) => (
-                    <a 
-                      key={index} 
-                      href={link.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="social-link"
-                    >
-                      {getSocialIcon(link.platform)}
-                      <span>{link.platform}</span>
-                    </a>
-                  ))}
+      {loading && activeTab === 'profile' ? (
+        <ProfileSkeleton />
+      ) : (
+        <div className="profile-content">
+          {activeTab === 'profile' && (
+            <div className="user-info">
+              <div className="profile-header">
+                <div className="profile-avatar-section">
+                  <img 
+                    src={user?.imageUrl || "https://via.placeholder.com/100"} 
+                    alt="User Avatar" 
+                    className="profile-avatar"
+                  />
+                  {isEditing && (
+                    <button className="change-avatar-btn">
+                      Change Avatar
+                    </button>
+                  )}
+                </div>
+                
+                <div className="profile-actions">
+                  {isEditing ? (
+                    <>
+                      <button className="cancel-edit-btn" onClick={cancelEditing}>
+                        Cancel
+                      </button>
+                      <button className="save-profile-btn" onClick={saveProfileChanges}>
+                        <FiCheck /> Save Changes
+                      </button>
+                    </>
+                  ) : (
+                    <button className="edit-profile-btn" onClick={() => setIsEditing(true)}>
+                      <FiEdit3 /> Edit Profile
+                    </button>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
-        )}
-        
-        {/* Edit Mode */}
-        {editMode && (
-          <div className="profile-form">
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="display_name">Display Name</label>
-                <input
-                  type="text"
-                  id="display_name"
-                  name="display_name"
-                  value={formData.display_name}
-                  onChange={handleInputChange}
-                  placeholder="How should we call you?"
-                />
+              
+              <div className="profile-section">
+                <h3>Name</h3>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    name="display_name"
+                    value={formData.display_name}
+                    onChange={handleInputChange}
+                    className="profile-input"
+                    placeholder="Your name"
+                  />
+                ) : (
+                  <p>{userProfile?.display_name || user?.fullName || user?.username}</p>
+                )}
               </div>
               
-              <div className="form-group">
-                <label htmlFor="bio">Bio</label>
-                <textarea
-                  id="bio"
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleInputChange}
-                  rows="4"
-                  placeholder="Tell us a bit about yourself"
-                ></textarea>
+              <div className="profile-section">
+                <h3>Bio</h3>
+                {isEditing ? (
+                  <textarea
+                    name="bio"
+                    value={formData.bio}
+                    onChange={handleInputChange}
+                    className="profile-textarea"
+                    placeholder="Tell us about yourself"
+                  />
+                ) : (
+                  <p>{userProfile?.bio || "No bio provided yet."}</p>
+                )}
               </div>
               
-              <div className="form-group">
-                <label htmlFor="website">Website</label>
-                <input
-                  type="url"
-                  id="website"
-                  name="website"
-                  value={formData.website}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com"
-                />
+              <div className="profile-section">
+                <h3>Website</h3>
+                {isEditing ? (
+                  <input
+                    type="url"
+                    name="website"
+                    value={formData.website}
+                    onChange={handleInputChange}
+                    className="profile-input"
+                    placeholder="https://yourwebsite.com"
+                  />
+                ) : (
+                  <p>
+                    {userProfile?.website ? (
+                      <a href={userProfile.website} target="_blank" rel="noopener noreferrer" className="website-link">
+                        {userProfile.website} <FiExternalLink />
+                      </a>
+                    ) : (
+                      "No website provided yet."
+                    )}
+                  </p>
+                )}
               </div>
               
-              <div className="form-group">
-                <label>Social Links</label>
-                {formData.social_links.map((link, index) => (
-                  <div key={index} className="social-link-form">
-                    <select
-                      value={link.platform}
-                      onChange={(e) => handleSocialLinkChange(index, 'platform', e.target.value)}
+              <div className="profile-section">
+                <h3>Social Links</h3>
+                {isEditing ? (
+                  <div className="social-links-editor">
+                    {formData.social_links.map((link, index) => (
+                      <div key={index} className="social-link-form">
+                        <div className="social-inputs">
+                          <input
+                            type="text"
+                            value={link.platform}
+                            onChange={(e) => handleSocialLinkChange(index, 'platform', e.target.value)}
+                            placeholder="Platform (e.g. Twitter)"
+                            className="social-platform-input"
+                          />
+                          <input
+                            type="url"
+                            value={link.url}
+                            onChange={(e) => handleSocialLinkChange(index, 'url', e.target.value)}
+                            placeholder="URL"
+                            className="social-url-input"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeSocialLink(index)}
+                          className="remove-social-btn"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addSocialLink}
+                      className="add-social-btn"
                     >
-                      <option value="">Select Platform</option>
-                      <option value="twitter">Twitter</option>
-                      <option value="github">GitHub</option>
-                      <option value="linkedin">LinkedIn</option>
-                      <option value="facebook">Facebook</option>
-                      <option value="instagram">Instagram</option>
-                      <option value="other">Other</option>
-                    </select>
-                    <input
-                      type="url"
-                      value={link.url}
-                      onChange={(e) => handleSocialLinkChange(index, 'url', e.target.value)}
-                      placeholder="https://"
-                    />
-                    <button 
-                      type="button" 
-                      className="remove-link-btn"
-                      onClick={() => removeSocialLink(index)}
-                    >
-                      <FiX />
+                      Add Social Link
                     </button>
                   </div>
-                ))}
-                <button 
-                  type="button" 
-                  className="add-link-btn"
-                  onClick={addSocialLink}
-                >
-                  Add Social Link
-                </button>
+                ) : (
+                  <div className="social-links">
+                    {userProfile?.social_links && userProfile.social_links.length > 0 ? (
+                      userProfile.social_links.map((link, index) => (
+                        <a 
+                          key={index} 
+                          href={link.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="social-link"
+                        >
+                          {getSocialIcon(link.platform)}
+                          <span>{link.platform}</span>
+                        </a>
+                      ))
+                    ) : (
+                      <p className="no-data">No social links provided yet.</p>
+                    )}
+                  </div>
+                )}
               </div>
-            </form>
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      )}
+      
+      {activeTab === 'notifications' && (
+        <NotificationSettings 
+          initialSettings={notificationSettings}
+          onSave={handleNotificationSettingsSave}
+        />
+      )}
+      
+      {activeTab === 'privacy' && (
+        <PrivacySettings 
+          initialSettings={privacySettings}
+          onSave={handlePrivacySettingsSave}
+        />
+      )}
+      
+      {activeTab === 'settings' && (
+        <AccountSettings 
+          initialSettings={accountSettings}
+          onSave={handleAccountSettingsSave}
+          onDeleteAccount={handleDeleteAccount}
+        />
+      )}
     </motion.div>
   );
 };

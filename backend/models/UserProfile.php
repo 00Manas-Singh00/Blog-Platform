@@ -151,4 +151,23 @@ class UserProfile {
             throw new Exception("Database error occurred");
         }
     }
+    
+    // Delete user profile
+    public function delete() {
+        try {
+            $query = "DELETE FROM " . $this->table_name . " WHERE clerk_id = ?";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(1, $this->clerk_id);
+            
+            if($stmt->execute()) {
+                return true;
+            }
+            
+            throw new Exception("Failed to delete profile: " . implode(", ", $stmt->errorInfo()));
+        } catch (PDOException $e) {
+            error_log("Database error in UserProfile::delete(): " . $e->getMessage());
+            throw new Exception("Database error occurred");
+        }
+    }
 } 

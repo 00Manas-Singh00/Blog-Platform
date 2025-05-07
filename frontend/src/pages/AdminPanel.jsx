@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { FiPlus, FiEdit, FiTrash, FiCheck, FiX } from 'react-icons/fi';
 import './AdminPanel.css';
-import { getPosts, createPost, deletePost } from '../services/api';
+import api from '../services/api';
 
 const AdminPanel = () => {
   const { user } = useUser();
@@ -23,7 +23,7 @@ const AdminPanel = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const data = await getPosts();
+        const data = await api.getPosts();
         setPosts(data.records || []);
       } catch (err) {
         setError('Failed to load posts.');
@@ -59,7 +59,7 @@ const AdminPanel = () => {
       };
       
       // Use API function instead of direct fetch
-      const result = await createPost(postData);
+      const result = await api.createPost(postData);
       
       // Reset form and update post list
       setFormData({
@@ -72,7 +72,7 @@ const AdminPanel = () => {
       setShowForm(false);
       
       // Refresh post list
-      const updatedPosts = await getPosts();
+      const updatedPosts = await api.getPosts();
       setPosts(updatedPosts.records || []);
       
     } catch (err) {
@@ -87,7 +87,7 @@ const AdminPanel = () => {
     
     try {
       // Use API function instead of direct fetch
-      await deletePost(postId);
+      await api.deletePost(postId);
       
       // Remove post from list
       setPosts(posts.filter(post => post.id !== postId));

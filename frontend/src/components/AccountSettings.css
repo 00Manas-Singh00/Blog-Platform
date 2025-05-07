@@ -1,0 +1,393 @@
+.account-settings {
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.account-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.account-icon {
+  font-size: 1.5rem;
+  color: var(--accent-color);
+  margin-right: 0.75rem;
+}
+
+.account-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.error-message {
+  background-color: rgba(229, 62, 62, 0.1);
+  color: var(--error-color);
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 3px solid var(--error-color);
+  font-size: 0.9rem;
+}
+
+.success-message {
+  background-color: rgba(56, 161, 105, 0.1);
+  color: var(--success-color);
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 3px solid var(--success-color);
+  font-size: 0.9rem;
+}
+
+.account-info {
+  display: flex;
+  background-color: rgba(66, 153, 225, 0.1);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1.5rem;
+  align-items: flex-start;
+}
+
+.info-icon {
+  color: var(--accent-color);
+  margin-right: 0.75rem;
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+}
+
+.account-info p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.account-section {
+  margin-bottom: 1.5rem;
+}
+
+.account-section h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.account-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.account-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Setting labels and selects */
+.setting-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.setting-select {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-width: 150px;
+  font-size: 0.9rem;
+}
+
+/* Toggle switch - reusing from other settings components */
+.toggle-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-label input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+  background-color: var(--border-color);
+  border-radius: 20px;
+  margin-right: 0.75rem;
+  transition: background-color 0.2s;
+}
+
+.toggle-switch:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--bg-primary);
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle-label input:checked + .toggle-switch {
+  background-color: var(--accent-color);
+}
+
+.toggle-label input:checked + .toggle-switch:before {
+  transform: translateX(20px);
+}
+
+.toggle-label input:focus + .toggle-switch {
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
+}
+
+.toggle-label span:last-child {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.setting-details {
+  background-color: rgba(66, 153, 225, 0.1);
+  border-left: 3px solid var(--accent-color);
+  padding: 0.75rem;
+  margin-left: 2.5rem;
+  border-radius: 0 4px 4px 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* Buttons */
+.change-password-btn, 
+.setup-2fa-btn {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-self: flex-start;
+}
+
+.change-password-btn:hover, 
+.setup-2fa-btn:hover {
+  background-color: var(--border-color);
+}
+
+/* Data management */
+.data-option {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  transition: background-color 0.2s;
+}
+
+.data-option:hover {
+  background-color: var(--bg-primary);
+}
+
+.data-action {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.data-icon {
+  font-size: 1.5rem;
+  color: var(--accent-color);
+}
+
+.data-icon.danger {
+  color: var(--error-color);
+}
+
+.data-text h5 {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.data-text p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.data-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.data-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.export-btn {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.export-btn:hover:not(:disabled) {
+  background-color: var(--border-color);
+}
+
+.delete-btn {
+  background-color: rgba(229, 62, 62, 0.1);
+  color: var(--error-color);
+}
+
+.delete-btn:hover:not(:disabled) {
+  background-color: rgba(229, 62, 62, 0.2);
+}
+
+/* Delete confirmation */
+.delete-confirm {
+  background-color: rgba(229, 62, 62, 0.1);
+  border-left: 3px solid var(--error-color);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0 6px 6px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.delete-icon {
+  color: var(--error-color);
+  font-size: 1.25rem;
+  margin-top: 0.25rem;
+}
+
+.delete-confirm h4 {
+  color: var(--error-color);
+  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  border-bottom: none;
+}
+
+.delete-confirm p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.delete-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.cancel-delete-btn {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cancel-delete-btn:hover {
+  background-color: var(--border-color);
+}
+
+.confirm-delete-btn {
+  background-color: var(--error-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.confirm-delete-btn:hover {
+  background-color: rgba(229, 62, 62, 0.8);
+}
+
+.account-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.save-account-btn {
+  background-color: var(--accent-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.save-account-btn:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+}
+
+.save-account-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 500px) {
+  .data-option {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .data-btn {
+    width: 100%;
+  }
+  
+  .account-actions {
+    justify-content: stretch;
+  }
+  
+  .save-account-btn {
+    width: 100%;
+  }
+} 
