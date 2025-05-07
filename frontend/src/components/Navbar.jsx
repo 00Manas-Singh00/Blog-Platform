@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiHome, FiFolder, FiUser, FiLogIn, FiMenu, FiX, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiFolder, FiUser, FiLogIn, FiMenu, FiX, FiLogOut, FiSettings } from 'react-icons/fi';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import './Navbar.css';
 
@@ -33,7 +33,9 @@ const Navbar = () => {
 
   // Handle signing out
   const handleSignOut = () => {
-    signOut();
+    if (signOut) {
+      signOut();
+    }
   };
 
   return (
@@ -80,19 +82,23 @@ const Navbar = () => {
                 <FiUser className="nav-icon" />
                 <span>Admin</span>
               </NavLink>
+              <NavLink to="/profile" className="nav-link">
+                <FiSettings className="nav-icon" />
+                <span>Profile</span>
+              </NavLink>
               <div onClick={handleSignOut} className="nav-link">
                 <FiLogOut className="nav-icon" />
                 <span>Logout</span>
               </div>
               <div className="user-profile">
-                {user.imageUrl && (
+                {user?.imageUrl && (
                   <img 
                     src={user.imageUrl} 
-                    alt={user.fullName || user.username || 'User'} 
+                    alt={user?.fullName || user?.username || 'User'} 
                     className="profile-image"
                   />
                 )}
-                <span>{user.fullName || user.username || user.primaryEmailAddress?.emailAddress}</span>
+                <span>{user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress}</span>
               </div>
             </>
           ) : (

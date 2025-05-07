@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { getPosts } from '../services/api';
-import PostCard from '../components/PostCard';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiBookOpen, FiLoader } from 'react-icons/fi';
+import api from '../services/api';
+import Spinner from '../components/Spinner';
 import './Home.css';
 
 const Home = () => {
@@ -13,113 +13,114 @@ const Home = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const data = await getPosts();
-        setPosts(data);
+        setLoading(true);
+        setError(null);
+        const response = await api.getPosts();
+        setPosts(response.data || []);
       } catch (err) {
-        setError('Failed to load posts.');
+        console.error('Error fetching posts:', err);
+        setError(err.message || 'Failed to load posts');
       } finally {
         setLoading(false);
       }
     };
+
     fetchPosts();
   }, []);
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    },
-    exit: { opacity: 0, transition: { duration: 0.2 } }
-  };
-
-  const headerVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" }
-    }
-  };
-
   if (loading) {
     return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="loading-container"
-      >
-        <FiLoader className="loading-spinner" />
-        <p>Loading posts...</p>
-      </motion.div>
+      <div className="flex justify-center items-center h-64">
+        <Spinner size="large" />
+      </div>
     );
   }
 
   if (error) {
     return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="error-message"
-      >
-        <p>{error}</p>
-      </motion.div>
+      <div className="text-center py-10">
+        <h2 className="text-2xl text-red-600 mb-4">Error</h2>
+        <p className="mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <h2 className="text-2xl mb-4">No Posts Found</h2>
+        <p className="mb-4">There are currently no blog posts available.</p>
+      </div>
     );
   }
 
   return (
-    <motion.div 
-      className="home-container"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="container mx-auto px-4 py-8"
     >
-      <motion.div variants={headerVariants} className="home-header">
-        <FiBookOpen className="header-icon" />
-        <h1>All Blog Posts</h1>
-      </motion.div>
+      <h1 className="text-3xl font-bold mb-8 text-center">Latest Blog Posts</h1>
       
-      {posts.length === 0 ? (
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          No posts found.
-        </motion.p>
-      ) : (
-        <ul className="post-list">
-          {posts.map((post, index) => (
-            <motion.li 
-              key={post.id} 
-              className="post-item"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ 
-                opacity: 1, 
-                y: 0,
-                transition: { 
-                  delay: index * 0.1,
-                  duration: 0.5,
-                  ease: "easeOut"
-                }
-              }}
-            >
-              <PostCard
-                id={post.id}
-                title={post.title}
-                excerpt={post.excerpt || post.content?.slice(0, 100) + '...'}
-                author={post.author}
-                date={post.created_at ? new Date(post.created_at).toLocaleDateString() : ''}
-                category={post.category}
-                tags={post.tags}
-              />
-            </motion.li>
-          ))}
-        </ul>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {posts.map((post) => (
+          <motion.div
+            key={post.id}
+            whileHover={{ y: -5, transition: { duration: 0.2 } }}
+            className="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col"
+          >
+            {post.image_url && (
+              <div className="h-48 overflow-hidden">
+                <img
+                  src={post.image_url}
+                  alt={post.title}
+                  className="w-full h-full object-cover transition-transform duration-300 transform hover:scale-105"
+                  onError={(e) => {
+                    e.target.src = 'https://via.placeholder.com/400x250?text=No+Image';
+                  }}
+                />
+              </div>
+            )}
+            
+            <div className="p-5 flex-grow flex flex-col">
+              <div className="flex items-center mb-2">
+                <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                  {post.category || 'Uncategorized'}
+                </span>
+                <span className="text-gray-500 text-sm ml-auto">
+                  {new Date(post.created_at).toLocaleDateString()}
+                </span>
+              </div>
+              
+              <h2 className="text-xl font-bold mb-2 hover:text-blue-600">
+                <Link to={`/post/${post.id}`}>{post.title}</Link>
+              </h2>
+              
+              <p className="text-gray-700 mb-4 flex-grow line-clamp-3">
+                {post.content?.substring(0, 150)}
+                {post.content?.length > 150 ? '...' : ''}
+              </p>
+              
+              <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-100">
+                <span className="text-sm text-gray-600">By {post.author || 'Unknown'}</span>
+                <Link 
+                  to={`/post/${post.id}`} 
+                  className="text-blue-500 hover:underline text-sm font-medium"
+                >
+                  Read More
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </motion.div>
   );
 };

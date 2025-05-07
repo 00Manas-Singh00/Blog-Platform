@@ -52,38 +52,29 @@ const AdminPanel = () => {
     }
     
     try {
-      const token = await getToken();
-      const response = await fetch('http://localhost:8000/api/posts/create.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
-        })
+      // Prepare tags data
+      const postData = {
+        ...formData,
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+      };
+      
+      // Use API function instead of direct fetch
+      const result = await createPost(postData);
+      
+      // Reset form and update post list
+      setFormData({
+        title: '',
+        content: '',
+        excerpt: '',
+        category: '',
+        tags: ''
       });
+      setShowForm(false);
       
-      const data = await response.json();
+      // Refresh post list
+      const updatedPosts = await getPosts();
+      setPosts(updatedPosts.records || []);
       
-      if (response.ok) {
-        // Reset form and update post list
-        setFormData({
-          title: '',
-          content: '',
-          excerpt: '',
-          category: '',
-          tags: ''
-        });
-        setShowForm(false);
-        
-        // Refresh post list
-        const updatedPosts = await getPosts();
-        setPosts(updatedPosts.records || []);
-      } else {
-        alert(data.message || 'Failed to create post');
-      }
     } catch (err) {
       alert('Error: ' + err.message);
     }
@@ -95,22 +86,11 @@ const AdminPanel = () => {
     }
     
     try {
-      const token = await getToken();
-      const response = await fetch('http://localhost:8000/api/posts/delete.php', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ id: postId })
-      });
+      // Use API function instead of direct fetch
+      await deletePost(postId);
       
-      if (response.ok) {
-        // Remove post from list
-        setPosts(posts.filter(post => post.id !== postId));
-      } else {
-        alert('Failed to delete post');
-      }
+      // Remove post from list
+      setPosts(posts.filter(post => post.id !== postId));
     } catch (err) {
       alert('Error: ' + err.message);
     }

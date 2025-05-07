@@ -1,5 +1,25 @@
 <?php
 /**
+ * Environment Configuration
+ */
+
+// Database Configuration
+putenv("DB_HOST=localhost");
+putenv("DB_NAME=blog_platform");
+putenv("DB_USER=root");
+putenv("DB_PASS=");
+
+// Clerk Authentication
+putenv("CLERK_API_KEY=test_clerk_api_key");
+putenv("CLERK_JWT_KEY=test_clerk_jwt_key");
+
+// API Configuration
+putenv("API_URL=http://localhost:8000/api");
+
+// Environment (development, production)
+putenv("ENVIRONMENT=development");
+
+/**
  * Simple .env file loader for PHP
  */
 function loadEnv($path) {
