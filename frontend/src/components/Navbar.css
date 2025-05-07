@@ -1,0 +1,129 @@
+.navbar {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.navbar-scrolled {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.navbar-logo a {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #222;
+  text-decoration: none;
+  background: linear-gradient(to right, #3490dc, #61dafb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: block;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.nav-link {
+  color: #444;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.nav-icon {
+  margin-right: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.nav-link:hover {
+  color: #3490dc;
+  background: rgba(52, 144, 220, 0.08);
+}
+
+.nav-link.active {
+  color: #3490dc;
+  background: rgba(52, 144, 220, 0.12);
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 15px;
+  height: 3px;
+  background: #3490dc;
+  border-radius: 2px;
+}
+
+.mobile-menu-toggle {
+  display: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #444;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .navbar-container {
+    flex-wrap: wrap;
+  }
+  
+  .mobile-menu-toggle {
+    display: block;
+  }
+  
+  .navbar-links {
+    flex-direction: column;
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    gap: 0;
+  }
+  
+  .navbar-links.mobile-open {
+    max-height: 300px;
+    margin-top: 1rem;
+  }
+  
+  .nav-link {
+    width: 100%;
+    padding: 0.7rem;
+    border-radius: 0;
+  }
+  
+  .nav-link:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .nav-link.active::after {
+    display: none;
+  }
+  
+  .nav-link.active {
+    border-left: 3px solid #3490dc;
+  }
+} 

@@ -1,0 +1,62 @@
+.home-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+}
+
+.home-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header-icon {
+  font-size: 2.2rem;
+  margin-right: 1rem;
+  color: #61dafb;
+}
+
+.post-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.post-item {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  color: #777;
+}
+
+.loading-spinner {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  animation: spin 2s linear infinite;
+}
+
+.error-message {
+  background: #fff2f2;
+  border-left: 4px solid #ff5252;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 2rem 0;
+  color: #d32f2f;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+} 
