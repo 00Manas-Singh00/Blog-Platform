@@ -32,7 +32,6 @@
 
 - **Rich Content Management**
   - Create, edit, and delete blog posts
-  - Rich text editor with formatting options
   - Image uploads and management
   - Draft saving and publishing workflow
 
